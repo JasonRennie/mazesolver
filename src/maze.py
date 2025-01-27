@@ -52,6 +52,7 @@ class Cell():
         y2 = (to_cell._y1+to_cell._y2)/2
         self._win.draw_line(Line(Point(x1,y1), Point(x2,y2)), colour)
 
+
 class Maze():
     def __init__(
         self,
@@ -166,3 +167,45 @@ class Maze():
             for cell in col:
                 cell._visited = False
 
+
+    def path_is_clear(self, i, j, d):
+        dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        new_i, new_j = i+d[0], j+d[1]
+
+        if d == dirs[0]:
+            return (self._cells[i][j].has_right_wall == False and
+                    self._cells[new_i][new_j].has_left_wall == False)
+        elif d == dirs[1]:
+            return (self._cells[i][j].has_bottom_wall == False and
+                    self._cells[new_i][new_j].has_top_wall == False)
+        elif d == dirs[2]:
+            return (self._cells[i][j].has_left_wall == False and
+                    self._cells[new_i][new_j].has_right_wall == False)
+        elif d == dirs[3]:
+            return (self._cells[i][j].has_top_wall == False and
+                    self._cells[new_i][new_j].has_bottom_wall == False)
+
+    
+    def solve(self):
+        return self._solve_r(0, 0)
+
+
+    def _solve_r(self, i, j):
+        print(i, j)
+        self._animate()
+        self._cells[i][j]._visited = True
+        if i==self._num_cols-1 and j==self._num_rows-1:
+            return True
+        
+        # Solve maze
+        dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        for d in dirs:
+            new_i, new_j = i+d[0], j+d[1]
+            print(f"- {new_i} {new_j} {self.is_valid_cell(new_i, new_j)} {self.path_is_clear(i, j, d)}")
+            if self.is_valid_cell(new_i, new_j) and self.path_is_clear(i, j, d):
+                self._cells[i][j].draw_move(self._cells[new_i][new_j])
+                solved = self._solve_r(new_i, new_j)
+                if solved:
+                    return True
+                self._cells[i][j].draw_move(self._cells[new_i][new_j], undo=True)
+        return False
