@@ -1,1 +1,2 @@
 # Maze Solver
+## Contributing
