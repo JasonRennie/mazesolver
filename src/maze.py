@@ -74,6 +74,8 @@ class Maze():
 
         self._create_cells()
         self._break_entrance_and_exit()
+        self._break_walls_r(0, 0)
+        self._reset_cells_visited()
 
     def _create_cells(self):
         for i in range(self._num_cols):
@@ -116,4 +118,51 @@ class Maze():
 
         self._draw_cell(0, 0)
         self._draw_cell(self._num_cols-1, self._num_rows-1)
+
+    
+    def is_valid_cell(self, i, j):
+        max_x = len(self._cells)-1
+        max_y = len(self._cells[0])-1
+        return (0 <= i <= max_x and 
+                0 <= j <= max_y and 
+                not self._cells[i][j]._visited)
+    
+
+    def _break_walls_r(self, i, j):
+        self._cells[i][j]._visited = True
+        while True:
+            to_visit = []
+            # right, down, left, up
+            dirs = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+
+            for d in dirs:
+                if self.is_valid_cell(i+d[0], j+d[1]):
+                    to_visit.append(d)
+            
+            if len(to_visit) == 0:
+                self._draw_cell(i, j)
+                return
+            
+            random_dir = to_visit[random.randrange(0, len(to_visit))]
+            new_i, new_j = i+random_dir[0], j+random_dir[1]
+
+            if random_dir == dirs[0]:
+                self._cells[i][j].has_right_wall = False
+                self._cells[new_i][new_j].has_left_wall = False
+            elif random_dir == dirs[1]:
+                self._cells[i][j].has_bottom_wall = False
+                self._cells[new_i][new_j].has_top_wall = False
+            elif random_dir == dirs[2]:
+                self._cells[i][j].has_left_wall = False
+                self._cells[new_i][new_j].has_right_wall = False
+            elif random_dir == dirs[3]:
+                self._cells[i][j].has_top_wall = False
+                self._cells[new_i][new_j].has_bottom_wall = False
+
+            self._break_walls_r(new_i, new_j)
+
+    def _reset_cells_visited(self):
+        for col in self._cells:
+            for cell in col:
+                cell._visited = False
 
